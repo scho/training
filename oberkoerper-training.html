@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Oberkörper-Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8ECEF;--surface:#FFFFFF;--ink:#15202A;--muted:#5A6772;--line:#CCD4DA;
+  --work:#2D55E0;--rest:#13916B;--work-soft:#DCE4FC;--rest-soft:#D3F0E6;
+  --accent:var(--work);--accent-soft:var(--work-soft);
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F151A;--surface:#18212A;--ink:#E7ECF0;--muted:#93A0AB;--line:#2A3640;
+    --work:#7391FF;--rest:#3CC79B;--work-soft:#1E2A52;--rest-soft:#123A2F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F151A;--surface:#18212A;--ink:#E7ECF0;--muted:#93A0AB;--line:#2A3640;
+  --work:#7391FF;--rest:#3CC79B;--work-soft:#1E2A52;--rest-soft:#123A2F;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;min-height:100%;background:var(--bg);color:var(--ink);
+  font-family:"Barlow",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+}
+.num,h1,h2{font-family:"Barlow Condensed","Arial Narrow",-apple-system,sans-serif;font-weight:700;letter-spacing:.01em}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.screen{display:none;max-width:560px;margin:0 auto;padding:20px 18px 28px}
+.screen.active{display:block}
+
+/* Start */
+h1{font-size:44px;line-height:1;margin:12px 0 6px}
+.lead{color:var(--muted);margin:0 0 20px}
+.week{display:flex;align-items:baseline;gap:10px;margin:0 0 22px}
+.week .num{font-size:34px;color:var(--work)}
+.week span:last-child{color:var(--muted)}
+.settings{background:var(--surface);border-radius:14px;padding:6px 16px;margin-bottom:22px}
+.setting{display:flex;justify-content:space-between;align-items:center;padding:12px 0;gap:12px}
+.setting+.setting{border-top:1px solid var(--line)}
+.seg{display:flex;background:var(--bg);border-radius:9px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:7px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+h2{font-size:24px;margin:22px 0 8px}
+.plan{list-style:none;margin:0;padding:0}
+.plan li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
+.plan li span:last-child{color:var(--muted);white-space:nowrap}
+.hint{color:var(--muted);font-size:15px;margin:10px 0 0}
+.primary{
+  display:block;width:100%;border:0;border-radius:14px;padding:17px;margin-top:26px;
+  background:var(--work);color:#fff;font-size:20px;font-weight:600;
+}
+.sticky-start{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+
+/* Run */
+#run.active{display:flex;flex-direction:column;min-height:calc(100svh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding-top:12px}
+#run[data-kind="rest"]{--accent:var(--rest);--accent-soft:var(--rest-soft)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.phase{font-weight:600}
+.count{color:var(--muted);font-variant-numeric:tabular-nums}
+.quit{border:0;background:none;color:var(--muted);padding:6px 0;font-size:15px}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:10px 0 0;overflow:hidden}
+.bar div{height:100%;width:0;background:var(--accent);transition:width .3s}
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px 0}
+.ring{position:relative;width:min(68vw,290px);aspect-ratio:1}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .track{stroke:var(--accent-soft)}
+.ring .fill{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .12s linear}
+.ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.big{font-size:min(24vw,104px);line-height:1;font-variant-numeric:tabular-nums;color:var(--accent)}
+.big.small{font-size:min(16vw,68px)}
+.sub{color:var(--muted);font-variant-numeric:tabular-nums;margin-top:4px}
+.kindtag{font-weight:600;color:var(--accent);margin:18px 0 0}
+.title{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-weight:700;font-size:34px;line-height:1.05;margin:4px 0 8px}
+.cue{color:var(--muted);max-width:30em;margin:0}
+.next{color:var(--muted);font-size:15px;text-align:center;min-height:22px;margin-bottom:14px}
+.next b{color:var(--ink);font-weight:600}
+.controls{display:grid;grid-template-columns:64px 1fr 64px;gap:12px;align-items:center}
+.icon{border:0;background:var(--surface);border-radius:50%;width:64px;height:64px;display:grid;place-items:center}
+.icon svg{width:26px;height:26px}
+.main-btn{border:0;border-radius:32px;height:64px;background:var(--accent);color:#fff;font-size:20px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+.main-btn svg{width:24px;height:24px}
+
+/* Done */
+#done{text-align:center;padding-top:60px}
+#done .num{font-size:64px;color:var(--rest);line-height:1}
+.log{list-style:none;padding:0;margin:24px 0 0;text-align:left;background:var(--surface);border-radius:14px}
+.log li{padding:12px 16px}
+.log li+li{border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen active" aria-labelledby="t">
+  <h1 id="t">Oberkörper-Training</h1>
+  <p class="lead">Zweimal pro Woche, ca. 30 Minuten. Du brauchst eine Matte, einen stabilen Tisch und zwei Stühle.</p>
+  <div class="week"><span class="num" id="weekCount">0 von 2</span><span>Einheiten diese Woche</span></div>
+
+  <div class="settings">
+    <div class="setting"><span>Pause zwischen Übungen</span>
+      <div class="seg" id="segRest">
+        <button data-v="20">20 s</button><button data-v="30">30 s</button><button data-v="45">45 s</button>
+      </div>
+    </div>
+    <div class="setting"><span>Runden im Hauptteil</span>
+      <div class="seg" id="segRounds">
+        <button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button>
+      </div>
+    </div>
+  </div>
+
+  <h2>Aufwärmen</h2><ul class="plan" id="pWarm"></ul>
+  <h2>Hauptteil</h2><ul class="plan" id="pMain"></ul>
+  <p class="hint">Pause zwischen den Runden: 75 Sekunden. Schaffst du überall 12 saubere Wiederholungen, mach die Übung schwerer oder nimm eine Runde mehr.</p>
+  <h2>Abschluss</h2><ul class="plan" id="pCool"></ul>
+
+  <div class="sticky-start"><button class="primary" id="startBtn">Training starten</button></div>
+</section>
+
+<section id="run" class="screen" aria-live="polite">
+  <div class="top">
+    <span class="phase" id="phase"></span>
+    <span class="count" id="count"></span>
+    <button class="quit" id="quitBtn">Beenden</button>
+  </div>
+  <div class="bar"><div id="bar"></div></div>
+
+  <div class="stage">
+    <div class="ring">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="track" cx="50" cy="50" r="44"/>
+        <circle class="fill" id="ringFill" cx="50" cy="50" r="44"/>
+      </svg>
+      <div class="ring-inner">
+        <span class="big num" id="big"></span>
+        <span class="sub" id="sub"></span>
+      </div>
+    </div>
+    <p class="kindtag" id="kindtag"></p>
+    <p class="title" id="title"></p>
+    <p class="cue" id="cue"></p>
+  </div>
+
+  <p class="next" id="next"></p>
+  <div class="controls">
+    <button class="icon" id="backBtn" aria-label="Vorheriger Schritt">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+    </button>
+    <button class="main-btn" id="mainBtn"></button>
+    <button class="icon" id="skipBtn" aria-label="Nächster Schritt">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+</section>
+
+<section id="done" class="screen">
+  <p class="num">Geschafft</p>
+  <p class="lead" id="doneText"></p>
+  <ul class="log" id="log"></ul>
+  <button class="primary" id="homeBtn">Zur Übersicht</button>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  var KEY_LOG = "ok-training-log", KEY_CFG = "ok-training-cfg";
+  function load(k, fb){ try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }catch(e){ return fb; } }
+  function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+  var cfg = load(KEY_CFG, {rest:30, rounds:3});
+  var ROUND_REST = 75;
+
+  var WARM = [
+    {name:"Armkreisen", time:60, cue:"Große Kreise, 30 Sekunden vorwärts, 30 Sekunden rückwärts."},
+    {name:"Schulterkreisen", time:60, cue:"Arme locker hängen lassen, Schultern langsam nach hinten kreisen."},
+    {name:"Katze-Kuh", time:60, cue:"Vierfüßlerstand, Rücken langsam rund machen und durchhängen lassen. Zwickt das Handgelenk, auf die Fäuste gehen."},
+    {name:"Wandliegestütze auf den Fäusten", reps:"10 Wdh.", cue:"Fäuste an die Wand, Körper gerade, Brust zur Wand führen."}
+  ];
+  var MAIN = [
+    {name:"Liegestütze auf den Fäusten", reps:"8–12 Wdh.", cue:"Auf gefalteter Matte, Handgelenk gerade. Anfangs erhöht an Tisch- oder Sofakante."},
+    {name:"Tischrudern", reps:"8–12 Wdh.", cue:"Unter einen stabilen Tisch legen, Kante greifen, Brust zur Kante ziehen. Körper bleibt gerade."},
+    {name:"Dips an Stühlen", reps:"8–12 Wdh.", cue:"Ellbogen zeigen nach hinten, Schultern weg von den Ohren. Beine anfangs angewinkelt."},
+    {name:"Unterarmstütz mit Schulterantippen", time:35, cue:"Hüfte ruhig halten und abwechselnd die gegenüberliegende Schulter antippen."},
+    {name:"Y-T-W in Bauchlage", reps:"6 Durchgänge", cue:"Arme als Y, dann T, dann W anheben, jeweils 2 Sekunden halten. Blick zur Matte."},
+    {name:"Handtuch-Bizeps", sets:3, hold:10, gap:10, cue:"Auf das Handtuch stellen, Enden greifen und mit voller Kraft nach oben ziehen."}
+  ];
+  var COOL = [
+    {name:"Dead Bug", reps:"8 Wdh. je Seite", cue:"Rückenlage, Arme und Knie nach oben. Gegenüberliegenden Arm und Bein langsam absenken. Der untere Rücken bleibt fest auf der Matte."},
+    {name:"Seitstütz links", time:25, cue:"Auf dem linken Unterarm, Körper in einer Linie."},
+    {name:"Seite wechseln", time:10, rest:true, cue:"Kurz ablegen und umdrehen."},
+    {name:"Seitstütz rechts", time:25, cue:"Auf dem rechten Unterarm, Körper in einer Linie."},
+    {name:"Kindhaltung", time:40, cue:"Knie auseinander, Po zu den Fersen, Arme lang nach vorn. In den unteren Rücken atmen."},
+    {name:"Knie zur Brust", time:40, cue:"Rückenlage, beide Knie umfassen und sanft zur Brust ziehen. Leicht hin und her wiegen."},
+    {name:"Hüftbeuger links", time:45, cue:"Linkes Knie auf der Matte, rechter Fuß vorn. Po anspannen, Becken aufrichten, dann leicht nach vorn schieben. Nicht ins Hohlkreuz fallen."},
+    {name:"Hüftbeuger rechts", time:45, cue:"Rechtes Knie auf der Matte, linker Fuß vorn. Po anspannen, Becken aufrichten, leicht nach vorn schieben."},
+    {name:"Oberschenkel hinten links", time:45, cue:"Rückenlage, Handtuch um den linken Fuß, Bein möglichst gestreckt nach oben ziehen. Rechtes Bein bleibt am Boden."},
+    {name:"Oberschenkel hinten rechts", time:45, cue:"Rückenlage, Handtuch um den rechten Fuß, Bein nach oben ziehen. Linkes Bein bleibt am Boden."}
+  ];
+
+  function describe(ex){
+    if (ex.sets) return ex.sets + " × " + ex.hold + " s";
+    if (ex.time) return ex.time + " s";
+    return ex.reps;
+  }
+  function fillPlan(id, list){
+    var ul = document.getElementById(id); ul.innerHTML = "";
+    list.forEach(function(ex){
+      if (ex.rest) return;
+      var li = document.createElement("li");
+      li.innerHTML = "<span></span><span></span>";
+      li.children[0].textContent = ex.name; li.children[1].textContent = describe(ex);
+      ul.appendChild(li);
+    });
+  }
+
+  function pushEx(steps, ex, phase){
+    if (ex.sets){
+      for (var s=1; s<=ex.sets; s++){
+        steps.push({phase:phase, kind:"work", mode:"time", dur:ex.hold, title:ex.name, set:"Satz " + s + " von " + ex.sets, cue:ex.cue});
+        if (s < ex.sets) steps.push({phase:phase, kind:"rest", mode:"time", dur:ex.gap, title:"Kurz lösen", cue:"Gleich der nächste Satz.", inner:true});
+      }
+    } else if (ex.time){
+      steps.push({phase:phase, kind:ex.rest ? "rest" : "work", mode:"time", dur:ex.time, title:ex.name, cue:ex.cue});
+    } else {
+      steps.push({phase:phase, kind:"work", mode:"reps", reps:ex.reps, title:ex.name, cue:ex.cue});
+    }
+  }
+  function rest(steps, phase, dur, title, cue){
+    steps.push({phase:phase, kind:"rest", mode:"time", dur:dur, title:title, cue:cue});
+  }
+  function buildSteps(){
+    var steps = [];
+    WARM.forEach(function(ex){ pushEx(steps, ex, "Aufwärmen"); });
+    rest(steps, "Aufwärmen", 30, "Vorbereiten", "Tisch und Stühle bereitstellen, Matte falten.");
+    for (var r=1; r<=cfg.rounds; r++){
+      var ph = "Runde " + r + " von " + cfg.rounds;
+      MAIN.forEach(function(ex, k){
+        pushEx(steps, ex, ph);
+        if (k < MAIN.length-1) rest(steps, ph, cfg.rest, "Pause", "Durchatmen, Arme ausschütteln.");
+      });
+      if (r < cfg.rounds) rest(steps, ph, ROUND_REST, "Rundenpause", "Etwas trinken. Gleich startet Runde " + (r+1) + ".");
+    }
+    rest(steps, "Abschluss", 20, "Übergang", "Auf die Matte legen, gleich kommt der Abschluss.");
+    COOL.forEach(function(ex){ pushEx(steps, ex, "Abschluss"); });
+    return steps;
+  }
+
+  /* Settings UI */
+  function initSeg(id, key){
+    var seg = document.getElementById(id);
+    function paint(){ Array.prototype.forEach.call(seg.children, function(b){ b.setAttribute("aria-pressed", String(+b.dataset.v === cfg[key])); }); }
+    seg.addEventListener("click", function(e){
+      var b = e.target.closest("button"); if (!b) return;
+      cfg[key] = +b.dataset.v; save(KEY_CFG, cfg); paint();
+    });
+    paint();
+  }
+
+  /* Log */
+  function getLog(){ var l = load(KEY_LOG, []); return Array.isArray(l) ? l : []; }
+  function weekStart(){
+    var d = new Date(); d.setHours(0,0,0,0);
+    var day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d;
+  }
+  function paintWeek(){
+    var ws = weekStart().getTime();
+    var n = getLog().filter(function(t){ return new Date(t).getTime() >= ws; }).length;
+    document.getElementById("weekCount").textContent = n + " von 2";
+  }
+
+  /* Audio */
+  var ac = null;
+  function unlockAudio(){
+    try{
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === "suspended") ac.resume();
+      var o = ac.createOscillator(), g = ac.createGain(); g.gain.value = 0; o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .01);
+    }catch(e){}
+  }
+  function beep(freq, len){
+    if (!ac) return;
+    try{
+      var o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+      o.frequency.value = freq; o.type = "sine";
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.4, t + .01);
+      g.gain.exponentialRampToValueAtTime(.0001, t + len);
+      o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + len + .02);
+    }catch(e){}
+  }
+
+  /* Wake lock */
+  var lock = null;
+  function wake(){ try{ if ("wakeLock" in navigator && document.visibilityState === "visible") navigator.wakeLock.request("screen").then(function(l){ lock = l; }).catch(function(){}); }catch(e){} }
+  function unwake(){ try{ if (lock) lock.release(); }catch(e){} lock = null; }
+  document.addEventListener("visibilitychange", function(){ if (running && document.visibilityState === "visible") wake(); });
+
+  /* Runner */
+  var steps = [], idx = 0, running = false, remaining = 0, elapsed = 0, lastTs = 0, lastBeep = null, timer = null;
+  var C = 2 * Math.PI * 44;
+  var $ = function(id){ return document.getElementById(id); };
+  $("ringFill").style.strokeDasharray = C;
+
+  function show(id){
+    ["start","run","done"].forEach(function(s){ $(s).classList.toggle("active", s === id); });
+    window.scrollTo(0,0);
+  }
+  function fmt(ms){
+    var s = Math.max(0, Math.ceil(ms/1000)); var m = Math.floor(s/60); s = s % 60;
+    return m ? m + ":" + (s<10 ? "0" : "") + s : String(s);
+  }
+  function fmtUp(ms){
+    var s = Math.floor(ms/1000), m = Math.floor(s/60); s = s % 60;
+    return m + ":" + (s<10 ? "0" : "") + s;
+  }
+
+  var ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>';
+  var ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></svg>';
+
+  function loadStep(i){
+    idx = i; var st = steps[i];
+    remaining = st.mode === "time" ? st.dur * 1000 : 0;
+    elapsed = 0; lastBeep = null; lastTs = performance.now();
+    $("run").dataset.kind = st.kind;
+    $("phase").textContent = st.phase;
+    $("count").textContent = (i+1) + " / " + steps.length;
+    $("bar").style.width = (i / steps.length * 100) + "%";
+    $("kindtag").textContent = st.kind === "rest" ? "Pause" : (st.set || (st.mode === "reps" ? "Im eigenen Tempo" : "Halten"));
+    $("title").textContent = st.title;
+    $("cue").textContent = st.cue || "";
+    var nx = null;
+    for (var k=i+1; k<steps.length; k++){ if (steps[k].kind === "work"){ nx = steps[k]; break; } }
+    $("next").innerHTML = nx ? "Als Nächstes: <b></b>" : "Letzter Schritt";
+    if (nx) $("next").querySelector("b").textContent = nx.title + (nx.set ? " (" + nx.set + ")" : "");
+    render();
+  }
+
+  function render(){
+    var st = steps[idx]; var big = $("big"), sub = $("sub"), btn = $("mainBtn");
+    if (st.mode === "time"){
+      big.className = "big num"; big.textContent = fmt(remaining);
+      sub.textContent = running ? "" : "pausiert";
+      var p = 1 - remaining / (st.dur * 1000);
+      $("ringFill").style.strokeDashoffset = C * Math.min(1, Math.max(0, p));
+      btn.innerHTML = running ? ICON_PAUSE + "<span>Pause</span>" : ICON_PLAY + "<span>Weiter</span>";
+    } else {
+      big.className = "big num small"; big.textContent = st.reps;
+      sub.textContent = fmtUp(elapsed);
+      $("ringFill").style.strokeDashoffset = 0;
+      btn.innerHTML = "<span>Erledigt</span>";
+    }
+  }
+
+  function tick(){
+    var now = performance.now(), dt = now - lastTs; lastTs = now;
+    if (!running) return;
+    var st = steps[idx];
+    if (st.mode === "time"){
+      remaining -= dt;
+      var s = Math.ceil(remaining/1000);
+      if (s <= 3 && s > 0 && s !== lastBeep){ lastBeep = s; beep(660, .12); }
+      if (remaining <= 0){ beep(st.kind === "rest" ? 990 : 520, .45); next(); return; }
+    } else {
+      elapsed += dt;
+    }
+    render();
+  }
+
+  function next(){ if (idx < steps.length - 1) loadStep(idx + 1); else finish(); }
+  function prev(){ loadStep(Math.max(0, idx - 1)); }
+
+  function start(){
+    unlockAudio();
+    steps = buildSteps(); running = true;
+    show("run"); loadStep(0); wake();
+    clearInterval(timer); timer = setInterval(tick, 100);
+  }
+  function stop(){ running = false; clearInterval(timer); unwake(); }
+
+  function finish(){
+    stop();
+    var l = getLog(); l.unshift(new Date().toISOString()); save(KEY_LOG, l.slice(0, 50));
+    var ws = weekStart().getTime();
+    var n = l.filter(function(t){ return new Date(t).getTime() >= ws; }).length;
+    $("doneText").textContent = n >= 2 ? "Das war Einheit " + n + " diese Woche. Ziel erreicht." : "Einheit " + n + " von 2 diese Woche ist gespeichert.";
+    var ul = $("log"); ul.innerHTML = "";
+    l.slice(0, 5).forEach(function(t){
+      var li = document.createElement("li");
+      li.textContent = new Date(t).toLocaleDateString("de-DE", {weekday:"long", day:"numeric", month:"long"});
+      ul.appendChild(li);
+    });
+    show("done");
+  }
+
+  $("mainBtn").addEventListener("click", function(){
+    var st = steps[idx];
+    if (st.mode === "reps"){ beep(880, .15); next(); return; }
+    running = !running; lastTs = performance.now();
+    if (running) wake();
+    render();
+  });
+  $("skipBtn").addEventListener("click", next);
+  $("backBtn").addEventListener("click", prev);
+  $("quitBtn").addEventListener("click", function(){
+    if (confirm("Training beenden? Diese Einheit wird nicht gespeichert.")){ stop(); paintWeek(); show("start"); }
+  });
+  $("startBtn").addEventListener("click", start);
+  $("homeBtn").addEventListener("click", function(){ paintWeek(); show("start"); });
+
+  fillPlan("pWarm", WARM); fillPlan("pMain", MAIN); fillPlan("pCool", COOL);
+  initSeg("segRest", "rest"); initSeg("segRounds", "rounds");
+  paintWeek();
+})();
+</script>
+</body>
+</html>
