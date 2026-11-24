@@ -53,6 +53,7 @@ h1{font-size:44px;line-height:1;margin:12px 0 6px}
 .settings{background:var(--surface);border-radius:14px;padding:6px 16px;margin-bottom:22px}
 .setting{display:flex;justify-content:space-between;align-items:center;padding:12px 0;gap:12px}
 .setting+.setting{border-top:1px solid var(--line)}
+.dur{font-size:24px;color:var(--work);white-space:nowrap}
 .seg{display:flex;background:var(--bg);border-radius:9px;padding:3px}
 .seg button{border:0;background:none;padding:6px 12px;border-radius:7px;font-weight:600;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
@@ -110,7 +111,7 @@ h2{font-size:24px;margin:22px 0 8px}
 
 <section id="start" class="screen active" aria-labelledby="t">
   <h1 id="t">Oberkörper-Training</h1>
-  <p class="lead">Zweimal pro Woche, ca. 30 Minuten. Du brauchst eine Matte, einen stabilen Tisch und zwei Stühle.</p>
+  <p class="lead">Zweimal pro Woche. Du brauchst eine Matte, einen stabilen Tisch und zwei Stühle.</p>
   <div class="week"><span class="num" id="weekCount">0 von 2</span><span>Einheiten diese Woche</span></div>
 
   <div class="settings">
@@ -124,6 +125,7 @@ h2{font-size:24px;margin:22px 0 8px}
         <button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button>
       </div>
     </div>
+    <div class="setting"><span>Dauer mit diesen Einstellungen</span><span class="dur num" id="duration"></span></div>
   </div>
 
   <h2>Aufwärmen</h2><ul class="plan" id="pWarm"></ul>
@@ -191,18 +193,18 @@ h2{font-size:24px;margin:22px 0 8px}
     {name:"Armkreisen", time:60, cue:"Große Kreise, 30 Sekunden vorwärts, 30 Sekunden rückwärts."},
     {name:"Schulterkreisen", time:60, cue:"Arme locker hängen lassen, Schultern langsam nach hinten kreisen."},
     {name:"Katze-Kuh", time:60, cue:"Vierfüßlerstand, Rücken langsam rund machen und durchhängen lassen. Zwickt das Handgelenk, auf die Fäuste gehen."},
-    {name:"Wandliegestütze auf den Fäusten", reps:"10 Wdh.", cue:"Fäuste an die Wand, Körper gerade, Brust zur Wand führen."}
+    {name:"Wandliegestütze auf den Fäusten", reps:"10 Wdh.", est:25, cue:"Fäuste an die Wand, Körper gerade, Brust zur Wand führen."}
   ];
   var MAIN = [
     {name:"Liegestütze auf den Fäusten", reps:"8–12 Wdh.", cue:"Auf gefalteter Matte, Handgelenk gerade. Anfangs erhöht an Tisch- oder Sofakante."},
     {name:"Tischrudern", reps:"8–12 Wdh.", cue:"Unter einen stabilen Tisch legen, Kante greifen, Brust zur Kante ziehen. Körper bleibt gerade."},
     {name:"Dips an Stühlen", reps:"8–12 Wdh.", cue:"Ellbogen zeigen nach hinten, Schultern weg von den Ohren. Beine anfangs angewinkelt."},
     {name:"Unterarmstütz mit Schulterantippen", time:35, cue:"Hüfte ruhig halten und abwechselnd die gegenüberliegende Schulter antippen."},
-    {name:"Y-T-W in Bauchlage", reps:"6 Durchgänge", cue:"Arme als Y, dann T, dann W anheben, jeweils 2 Sekunden halten. Blick zur Matte."},
+    {name:"Y-T-W in Bauchlage", reps:"6 Durchgänge", est:45, cue:"Arme als Y, dann T, dann W anheben, jeweils 2 Sekunden halten. Blick zur Matte."},
     {name:"Handtuch-Bizeps", sets:3, hold:10, gap:10, cue:"Auf das Handtuch stellen, Enden greifen und mit voller Kraft nach oben ziehen."}
   ];
   var COOL = [
-    {name:"Dead Bug", reps:"8 Wdh. je Seite", cue:"Rückenlage, Arme und Knie nach oben. Gegenüberliegenden Arm und Bein langsam absenken. Der untere Rücken bleibt fest auf der Matte."},
+    {name:"Dead Bug", reps:"8 Wdh. je Seite", est:50, cue:"Rückenlage, Arme und Knie nach oben. Gegenüberliegenden Arm und Bein langsam absenken. Der untere Rücken bleibt fest auf der Matte."},
     {name:"Seitstütz links", time:25, cue:"Auf dem linken Unterarm, Körper in einer Linie."},
     {name:"Seite wechseln", time:10, rest:true, cue:"Kurz ablegen und umdrehen."},
     {name:"Seitstütz rechts", time:25, cue:"Auf dem rechten Unterarm, Körper in einer Linie."},
@@ -239,7 +241,7 @@ h2{font-size:24px;margin:22px 0 8px}
     } else if (ex.time){
       steps.push({phase:phase, kind:ex.rest ? "rest" : "work", mode:"time", dur:ex.time, title:ex.name, cue:ex.cue});
     } else {
-      steps.push({phase:phase, kind:"work", mode:"reps", reps:ex.reps, title:ex.name, cue:ex.cue});
+      steps.push({phase:phase, kind:"work", mode:"reps", reps:ex.reps, est:ex.est || 40, title:ex.name, cue:ex.cue});
     }
   }
   function rest(steps, phase, dur, title, cue){
@@ -268,9 +270,14 @@ h2{font-size:24px;margin:22px 0 8px}
     function paint(){ Array.prototype.forEach.call(seg.children, function(b){ b.setAttribute("aria-pressed", String(+b.dataset.v === cfg[key])); }); }
     seg.addEventListener("click", function(e){
       var b = e.target.closest("button"); if (!b) return;
-      cfg[key] = +b.dataset.v; save(KEY_CFG, cfg); paint();
+      cfg[key] = +b.dataset.v; save(KEY_CFG, cfg); paint(); paintDuration();
     });
     paint();
+  }
+
+  function paintDuration(){
+    var total = buildSteps().reduce(function(sum, st){ return sum + (st.mode === "time" ? st.dur : st.est); }, 0);
+    document.getElementById("duration").textContent = "ca. " + Math.round(total / 60) + " Min.";
   }
 
   /* Log */
@@ -428,7 +435,7 @@ h2{font-size:24px;margin:22px 0 8px}
 
   fillPlan("pWarm", WARM); fillPlan("pMain", MAIN); fillPlan("pCool", COOL);
   initSeg("segRest", "rest"); initSeg("segRounds", "rounds");
-  paintWeek();
+  paintWeek(); paintDuration();
 })();
 </script>
 </body>
