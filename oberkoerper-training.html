@@ -113,7 +113,11 @@ h2{font-size:24px;margin:22px 0 8px}
 #done{text-align:center;padding-top:60px}
 #done .num{font-size:64px;color:var(--rest);line-height:1}
 .log{list-style:none;padding:0;margin:24px 0 0;text-align:left;background:var(--surface);border-radius:14px}
-.log li{padding:12px 16px}
+.log li{padding:12px 16px;display:flex;justify-content:space-between;gap:12px}
+.log .meta{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+.log .dur-l{color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.log li.empty{color:var(--muted)}
+#start .log{margin-top:0}
 .log li+li{border-top:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -122,7 +126,7 @@ h2{font-size:24px;margin:22px 0 8px}
 
 <section id="start" class="screen active" aria-labelledby="t">
   <h1 id="t">Oberkörper-Training</h1>
-  <p class="lead">Zweimal pro Woche. Du brauchst eine Matte, einen stabilen Tisch, zwei Stühle und ein Handtuch. Tipp auf eine Übung für die Anleitung.</p>
+  <p class="lead">Zweimal pro Woche. Du brauchst eine Matte, Liegestützgriffe, einen Yogagurt, einen stabilen Tisch und zwei Stühle. Tipp auf eine Übung für die Anleitung.</p>
   <div class="week"><span class="num" id="weekCount">0 von 2</span><span>Einheiten diese Woche</span></div>
 
   <div class="settings">
@@ -143,6 +147,7 @@ h2{font-size:24px;margin:22px 0 8px}
   <h2>Hauptteil</h2><ul class="plan" id="pMain"></ul>
   <p class="hint">Pause zwischen den Runden: 75 Sekunden. Schaffst du überall 12 saubere Wiederholungen, mach die Übung schwerer oder nimm eine Runde mehr.</p>
   <h2>Abschluss</h2><ul class="plan" id="pCool"></ul>
+  <h2>Verlauf</h2><ul class="log" id="history"></ul>
 
   <div class="sticky-start"><button class="primary" id="startBtn">Training starten</button></div>
 </section>
@@ -224,9 +229,9 @@ h2{font-size:24px;margin:22px 0 8px}
      muscles:"Brust, Trizeps, Schultern."}
   ];
   var MAIN = [
-    {name:"Liegestütze auf den Fäusten", reps:"8–12 Wdh.", cue:"Auf gefalteter Matte, Handgelenk gerade. Anfangs erhöht an Tisch- oder Sofakante.",
-     tool:"Matte doppelt gefaltet als Polster. Für die leichtere Variante eine Tisch- oder Sofakante.",
-     how:"Fäuste schulterbreit aufsetzen, das Gewicht liegt auf den Knöcheln von Zeige- und Mittelfinger. Das Handgelenk steht gerade über der Faust und knickt nicht ab, deshalb tut es so weniger weh.\n\nKörper von Kopf bis Ferse in einer Linie, Bauch und Po leicht anspannen. Die Brust bis knapp über den Boden absenken, die Ellbogen zeigen schräg nach hinten (etwa 45° zum Körper), dann kräftig hochdrücken.\n\nLeichter: Fäuste erhöht auf Tisch- oder Sofakante, oder Knie am Boden. Schwerer: 3 Sekunden langsam absenken oder die Füße erhöht ablegen.",
+    {name:"Liegestütze mit Griffen", reps:"8–12 Wdh.", cue:"Griffe schulterbreit, Handgelenke gerade. Körper in einer Linie, Brust zwischen die Griffe absenken.",
+     tool:"Deine Liegestützgriffe auf der Matte. Ohne Griffe gehen auch Fäuste auf der doppelt gefalteten Matte.",
+     how:"Griffe etwas breiter als schulterbreit auf die Matte stellen, parallel zueinander oder leicht nach außen gedreht, wie es für die Handgelenke angenehmer ist. Die Handgelenke bleiben gerade, das ist der große Vorteil der Griffe.\n\nKörper von Kopf bis Ferse in einer Linie, Bauch und Po leicht anspannen. Die Brust langsam zwischen die Griffe absenken, die Ellbogen zeigen schräg nach hinten (etwa 45° zum Körper), dann kräftig hochdrücken. Durch die Griffe kommst du tiefer als am Boden, das macht die Übung etwas schwerer, aber auch wirksamer.\n\nLeichter: Knie am Boden oder nur bis zur halben Tiefe. Schwerer: 3 Sekunden langsam absenken, unten kurz halten oder die Füße erhöht ablegen.",
      muscles:"Brust, Trizeps, vordere Schulter, Rumpf."},
     {name:"Tischrudern", reps:"8–12 Wdh.", cue:"Unter einen stabilen Tisch legen, Kante greifen, Brust zur Kante ziehen. Körper bleibt gerade.",
      tool:"Ein stabiler Tisch, z. B. ein Esstisch. Wichtig: Vorher prüfen, ob er dein Gewicht hält und nicht kippt. Leichte Tische mit dünnen Beinen nicht nehmen.",
@@ -234,7 +239,7 @@ h2{font-size:24px;margin:22px 0 8px}
      muscles:"Oberer Rücken, breiter Rückenmuskel, Bizeps. Die wichtigste Übung als Gegengewicht zum Drücken."},
     {name:"Dips an Stühlen", reps:"8–12 Wdh.", cue:"Ellbogen zeigen nach hinten, Schultern weg von den Ohren. Beine anfangs angewinkelt.",
      tool:"Zwei stabile Stühle ohne Rollen, mit der Lehne zur Wand gestellt, oder eine feste Sofakante.",
-     how:"Mit dem Rücken zur Sitzfläche stellen, Hände schulterbreit auf die Kante, Finger zeigen nach vorn. Po knapp vor der Kante, Beine angewinkelt vor dir.\n\nEllbogen nach hinten beugen und den Körper absenken, bis die Oberarme etwa waagerecht sind, dann wieder hochdrücken. Schultern bleiben unten, weg von den Ohren. Nur so tief gehen, wie es in den Schultern angenehm ist.\n\nSchwerer: Beine weiter vorn und gestreckt. Wenn die Handgelenke hier schmerzen, die Übung weglassen und bei den Liegestützen die Fäuste enger setzen.",
+     how:"Mit dem Rücken zur Sitzfläche stellen, Hände schulterbreit auf die Kante, Finger zeigen nach vorn. Po knapp vor der Kante, Beine angewinkelt vor dir.\n\nEllbogen nach hinten beugen und den Körper absenken, bis die Oberarme etwa waagerecht sind, dann wieder hochdrücken. Schultern bleiben unten, weg von den Ohren. Nur so tief gehen, wie es in den Schultern angenehm ist.\n\nSchwerer: Beine weiter vorn und gestreckt. Wenn die Handgelenke hier schmerzen, die Übung weglassen und bei den Liegestützen die Griffe enger stellen, das trainiert den Trizeps ebenfalls.",
      muscles:"Trizeps, vordere Schulter, Brust."},
     {name:"Unterarmstütz mit Schulterantippen", time:35, cue:"Hüfte ruhig halten und abwechselnd mit der Hand die gegenüberliegende Schulter antippen.",
      tool:"Keine.",
@@ -244,9 +249,9 @@ h2{font-size:24px;margin:22px 0 8px}
      tool:"Optional ein gefaltetes Handtuch unter der Stirn.",
      how:"Auf den Bauch legen, Stirn auf der Matte oder dem Handtuch, Daumen zeigen nach oben. Nacheinander drei Positionen anheben und jeweils 2 Sekunden halten:\n\nY: Arme schräg nach vorn oben. T: Arme seitlich ausgestreckt. W: Ellbogen gebeugt, Hände neben dem Kopf, Schulterblätter zur Mitte ziehen. Ein Durchgang ist Y, T und W.\n\nNur die Arme heben sich, die Brust bleibt am Boden. Bauch leicht anspannen, damit du nicht ins Hohlkreuz gehst.",
      muscles:"Oberer Rücken, hintere Schulter, Haltung."},
-    {name:"Handtuch-Bizeps", sets:3, hold:10, gap:10, cue:"Auf das Handtuch stellen, Enden greifen und mit voller Kraft nach oben ziehen.",
-     tool:"Ein stabiles, langes Handtuch.",
-     how:"Mit beiden Füßen mittig auf das Handtuch stellen und die Enden greifen, Handflächen zeigen nach oben. Ellbogen etwa im rechten Winkel, nah am Körper.\n\nMit voller Kraft nach oben ziehen, als wolltest du das Handtuch zerreißen. Es bewegt sich nicht, die Kraft entsteht trotzdem (isometrisch). 10 Sekunden halten und dabei weiteratmen.",
+    {name:"Bizeps mit Gurt", sets:3, hold:10, gap:10, cue:"Auf den Gurt stellen, Enden greifen und mit voller Kraft nach oben ziehen.",
+     tool:"Dein Yogagurt (alternativ ein langes Handtuch).",
+     how:"Mit beiden Füßen mittig auf den Gurt stellen und ihn so kurz greifen, dass die Ellbogen etwa im rechten Winkel und nah am Körper sind. Handflächen zeigen nach oben. Der Vorteil des Gurts: Du kannst die Länge genau einstellen.\n\nMit voller Kraft nach oben ziehen, als wolltest du den Gurt zerreißen. Er bewegt sich nicht, die Kraft entsteht trotzdem (isometrisch). 10 Sekunden halten und dabei weiteratmen.",
      muscles:"Bizeps, Unterarme."}
   ];
   var COOL = [
@@ -273,11 +278,11 @@ h2{font-size:24px;margin:22px 0 8px}
      tool:"Matte oder Handtuch doppelt unter dem Knie.",
      how:"Wie links, nur mit dem rechten Knie auf der Matte und dem linken Fuß vorn. Po anspannen, Becken aufrichten, dann sanft nach vorn schieben.",
      muscles:"Dehnt die Hüftbeuger."},
-    {name:"Oberschenkel hinten links", time:45, cue:"Rückenlage, Handtuch um den linken Fuß, Bein möglichst gestreckt nach oben ziehen. Rechtes Bein bleibt am Boden.",
+    {name:"Oberschenkel hinten links", time:45, cue:"Rückenlage, Gurt um den linken Fuß, Bein möglichst gestreckt nach oben ziehen. Rechtes Bein bleibt am Boden.",
      tool:"Ein Handtuch oder Gürtel.",
-     how:"Auf den Rücken legen, das Handtuch um die linke Fußsohle legen und beide Enden greifen. Das linke Bein möglichst gestreckt nach oben führen und mit dem Handtuch sanft heranziehen, bis du hinten im Oberschenkel ein deutliches, aber angenehmes Ziehen spürst.\n\nDas rechte Bein bleibt lang am Boden, der Rücken flach. Nicht wippen, ruhig halten und atmen. Leicht gebeugtes Knie ist in Ordnung.",
+     how:"Auf den Rücken legen, den Gurt um die linke Fußsohle legen und beide Enden greifen. Das linke Bein möglichst gestreckt nach oben führen und mit dem Gurt sanft heranziehen, bis du hinten im Oberschenkel ein deutliches, aber angenehmes Ziehen spürst.\n\nDas rechte Bein bleibt lang am Boden, der Rücken flach. Nicht wippen, ruhig halten und atmen. Leicht gebeugtes Knie ist in Ordnung.",
      muscles:"Dehnt die hinteren Oberschenkel, gut als Ausgleich zum Fußball."},
-    {name:"Oberschenkel hinten rechts", time:45, cue:"Rückenlage, Handtuch um den rechten Fuß, Bein nach oben ziehen. Linkes Bein bleibt am Boden.",
+    {name:"Oberschenkel hinten rechts", time:45, cue:"Rückenlage, Gurt um den rechten Fuß, Bein nach oben ziehen. Linkes Bein bleibt am Boden.",
      tool:"Ein Handtuch oder Gürtel.",
      how:"Wie links, nur mit dem rechten Bein. Das linke Bein bleibt lang am Boden, der Rücken flach.",
      muscles:"Dehnt die hinteren Oberschenkel."}
@@ -327,7 +332,10 @@ h2{font-size:24px;margin:22px 0 8px}
   }
   function buildSteps(){
     var steps = [];
-    WARM.forEach(function(ex){ pushEx(steps, ex, "Aufwärmen"); });
+    WARM.forEach(function(ex, k){
+      pushEx(steps, ex, "Aufwärmen");
+      if (k < WARM.length-1) rest(steps, "Aufwärmen", 5, "Kurz wechseln", "Gleich geht’s weiter.");
+    });
     rest(steps, "Aufwärmen", 30, "Vorbereiten", "Tisch und Stühle bereitstellen, Matte falten.");
     for (var r=1; r<=cfg.rounds; r++){
       var ph = "Runde " + r + " von " + cfg.rounds;
@@ -360,33 +368,75 @@ h2{font-size:24px;margin:22px 0 8px}
 
   /* Log */
   function getLog(){ var l = load(KEY_LOG, []); return Array.isArray(l) ? l : []; }
+  function entryTime(e){ return typeof e === "string" ? e : e.t; }
+  function logItem(e){
+    var li = document.createElement("li"), a = document.createElement("span"), b = document.createElement("span");
+    a.textContent = fmtDate(entryTime(e)); b.className = "dur-l";
+    if (e && e.setsTotal){
+      var m = document.createElement("span"); m.className = "meta";
+      m.textContent = e.sets + " von " + e.setsTotal + " Sätzen, " + e.rounds + " Runden, " + e.rest + " s Pause, " + e.roundRest + " s Rundenpause";
+      a.appendChild(m);
+    }
+    b.textContent = (e && e.min) ? e.min + " Min." : "–";
+    li.appendChild(a); li.appendChild(b); return li;
+  }
   function weekStart(){
     var d = new Date(); d.setHours(0,0,0,0);
     var day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d;
   }
+  function fmtDate(t){
+    var d = new Date(t);
+    return d.toLocaleDateString("de-DE", {weekday:"long", day:"2-digit", month:"2-digit", year:"numeric"}) + ", " +
+           d.toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"}) + " Uhr";
+  }
+  function paintHistory(){
+    var ul = document.getElementById("history"); ul.innerHTML = "";
+    var l = getLog();
+    if (!l.length){ var e = document.createElement("li"); e.className = "empty"; e.textContent = "Noch keine Einheit abgeschlossen."; ul.appendChild(e); return; }
+    l.forEach(function(e){ ul.appendChild(logItem(e)); });
+  }
   function paintWeek(){
+    paintHistory();
     var ws = weekStart().getTime();
-    var n = getLog().filter(function(t){ return new Date(t).getTime() >= ws; }).length;
+    var n = getLog().filter(function(e){ return new Date(entryTime(e)).getTime() >= ws; }).length;
     document.getElementById("weekCount").textContent = n + " von 2";
   }
 
   /* Audio */
   var ac = null;
+  var master = null;
   function unlockAudio(){
+    try{ if (navigator.audioSession) navigator.audioSession.type = "playback"; }catch(e){}
     try{
-      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (!ac){
+        ac = new (window.AudioContext || window.webkitAudioContext)();
+        var comp = ac.createDynamicsCompressor();
+        comp.threshold.value = -20; comp.knee.value = 6; comp.ratio.value = 8;
+        comp.attack.value = .002; comp.release.value = .1;
+        master = ac.createGain(); master.gain.value = 2.2;
+        comp.connect(master); master.connect(ac.destination);
+        ac._out = comp;
+      }
       if (ac.state === "suspended") ac.resume();
       var o = ac.createOscillator(), g = ac.createGain(); g.gain.value = 0; o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .01);
     }catch(e){}
   }
+  function tone(freq, t, len, type, vol){
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.frequency.value = freq; o.type = type;
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .005);
+    g.gain.setValueAtTime(vol, t + len * .7);
+    g.gain.exponentialRampToValueAtTime(.0001, t + len);
+    o.connect(g); g.connect(ac._out || ac.destination); o.start(t); o.stop(t + len + .02);
+  }
   function beep(freq, len){
     if (!ac) return;
     try{
-      var o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
-      o.frequency.value = freq; o.type = "sine";
-      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.4, t + .01);
-      g.gain.exponentialRampToValueAtTime(.0001, t + len);
-      o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + len + .02);
+      if (ac.state === "suspended") ac.resume();
+      var t = ac.currentTime;
+      // Rechteck + Oktave darüber: klingt deutlich lauter und durchdringender als ein Sinuston
+      tone(freq, t, len, "square", .9);
+      tone(freq * 2, t, len, "triangle", .6);
     }catch(e){}
   }
 
@@ -397,7 +447,7 @@ h2{font-size:24px;margin:22px 0 8px}
   document.addEventListener("visibilitychange", function(){ if (running && document.visibilityState === "visible") wake(); });
 
   /* Runner */
-  var steps = [], idx = 0, running = false, remaining = 0, elapsed = 0, lastTs = 0, lastBeep = null, timer = null;
+  var startedAt = Date.now(), completed = {}, steps = [], idx = 0, running = false, remaining = 0, elapsed = 0, lastTs = 0, lastBeep = null, timer = null;
   var C = 2 * Math.PI * 44;
   var $ = function(id){ return document.getElementById(id); };
   $("ringFill").style.strokeDasharray = C;
@@ -462,8 +512,8 @@ h2{font-size:24px;margin:22px 0 8px}
     if (st.mode === "time"){
       remaining -= dt;
       var s = Math.ceil(remaining/1000);
-      if (s <= 3 && s > 0 && s !== lastBeep){ lastBeep = s; beep(660, .12); }
-      if (remaining <= 0){ beep(st.kind === "rest" ? 990 : 520, .45); next(); return; }
+      if (s <= 3 && s > 0 && s !== lastBeep){ lastBeep = s; beep(1000, .15); }
+      if (remaining <= 0){ if (st.kind === "work") completed[idx] = true; beep(st.kind === "rest" ? 1400 : 800, .6); next(); return; }
     } else {
       elapsed += dt;
     }
@@ -475,7 +525,7 @@ h2{font-size:24px;margin:22px 0 8px}
 
   function start(){
     unlockAudio();
-    steps = buildSteps(); running = true;
+    steps = buildSteps(); running = true; startedAt = Date.now(); completed = {};
     show("run"); loadStep(0); wake();
     clearInterval(timer); timer = setInterval(tick, 100);
   }
@@ -483,22 +533,20 @@ h2{font-size:24px;margin:22px 0 8px}
 
   function finish(){
     stop();
-    var l = getLog(); l.unshift(new Date().toISOString()); save(KEY_LOG, l.slice(0, 50));
+    var l = getLog(); var total = steps.filter(function(x){ return x.kind === "work"; }).length;
+    l.unshift({t:new Date(startedAt).toISOString(), min:Math.max(1, Math.round((Date.now() - startedAt) / 60000)),
+               sets:Object.keys(completed).length, setsTotal:total, rounds:cfg.rounds, rest:cfg.rest, roundRest:ROUND_REST}); save(KEY_LOG, l.slice(0, 300));
     var ws = weekStart().getTime();
-    var n = l.filter(function(t){ return new Date(t).getTime() >= ws; }).length;
+    var n = l.filter(function(e){ return new Date(entryTime(e)).getTime() >= ws; }).length;
     $("doneText").textContent = n >= 2 ? "Das war Einheit " + n + " diese Woche. Ziel erreicht." : "Einheit " + n + " von 2 diese Woche ist gespeichert.";
     var ul = $("log"); ul.innerHTML = "";
-    l.slice(0, 5).forEach(function(t){
-      var li = document.createElement("li");
-      li.textContent = new Date(t).toLocaleDateString("de-DE", {weekday:"long", day:"numeric", month:"long"});
-      ul.appendChild(li);
-    });
+    l.slice(0, 5).forEach(function(e){ ul.appendChild(logItem(e)); });
     show("done");
   }
 
   $("mainBtn").addEventListener("click", function(){
     var st = steps[idx];
-    if (st.mode === "reps"){ beep(880, .15); next(); return; }
+    if (st.mode === "reps"){ completed[idx] = true; beep(1200, .15); next(); return; }
     running = !running; lastTs = performance.now();
     if (running) wake();
     render();
