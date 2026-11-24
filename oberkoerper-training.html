@@ -59,8 +59,18 @@ h1{font-size:44px;line-height:1;margin:12px 0 6px}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 h2{font-size:24px;margin:22px 0 8px}
 .plan{list-style:none;margin:0;padding:0}
-.plan li{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line)}
-.plan li span:last-child{color:var(--muted);white-space:nowrap}
+.plan li{border-bottom:1px solid var(--line)}
+.plan summary{display:flex;align-items:center;gap:12px;padding:12px 0;list-style:none;cursor:pointer}
+.plan summary::-webkit-details-marker{display:none}
+.plan summary .n{flex:1}
+.plan summary .m{color:var(--muted);white-space:nowrap}
+.plan .chev{width:18px;height:18px;flex:none;color:var(--muted);transition:transform .2s}
+.plan details[open] .chev{transform:rotate(180deg)}
+.plan details[open] summary .n{font-weight:600}
+.info{padding:0 0 14px;font-size:16px}
+.info p{margin:0 0 10px}
+.info .tool{background:var(--work-soft);border-radius:10px;padding:9px 12px}
+.info .muscles{color:var(--muted);margin-bottom:0}
 .hint{color:var(--muted);font-size:15px;margin:10px 0 0}
 .primary{
   display:block;width:100%;border:0;border-radius:14px;padding:17px;margin-top:26px;
@@ -111,7 +121,7 @@ h2{font-size:24px;margin:22px 0 8px}
 
 <section id="start" class="screen active" aria-labelledby="t">
   <h1 id="t">Oberkörper-Training</h1>
-  <p class="lead">Zweimal pro Woche. Du brauchst eine Matte, einen stabilen Tisch und zwei Stühle.</p>
+  <p class="lead">Zweimal pro Woche. Du brauchst eine Matte, einen stabilen Tisch, zwei Stühle und ein Handtuch. Tipp auf eine Übung für die Anleitung.</p>
   <div class="week"><span class="num" id="weekCount">0 von 2</span><span>Einheiten diese Woche</span></div>
 
   <div class="settings">
@@ -189,31 +199,87 @@ h2{font-size:24px;margin:22px 0 8px}
   var cfg = load(KEY_CFG, {rest:30, rounds:3});
   var ROUND_REST = 75;
 
+  var SIDE_PLANK = {
+    tool:"Keine.",
+    how:"Auf die Seite legen, Ellbogen genau unter der Schulter, Beine gestreckt übereinander. Hüfte anheben, bis Kopf, Hüfte und Füße eine gerade Linie bilden, und halten.\n\nDie Hüfte darf nicht nach unten sacken oder nach hinten ausweichen. Leichter wird es, wenn das untere Knie auf der Matte bleibt.",
+    muscles:"Seitliche Bauchmuskeln, Schulterstabilität."
+  };
   var WARM = [
-    {name:"Armkreisen", time:60, cue:"Große Kreise, 30 Sekunden vorwärts, 30 Sekunden rückwärts."},
-    {name:"Schulterkreisen", time:60, cue:"Arme locker hängen lassen, Schultern langsam nach hinten kreisen."},
-    {name:"Katze-Kuh", time:60, cue:"Vierfüßlerstand, Rücken langsam rund machen und durchhängen lassen. Zwickt das Handgelenk, auf die Fäuste gehen."},
-    {name:"Wandliegestütze auf den Fäusten", reps:"10 Wdh.", est:25, cue:"Fäuste an die Wand, Körper gerade, Brust zur Wand führen."}
+    {name:"Armkreisen", time:60, cue:"Große Kreise, 30 Sekunden vorwärts, 30 Sekunden rückwärts.",
+     tool:"Keine.",
+     how:"Aufrecht hinstellen, Arme seitlich ausstrecken. Mit kleinen Kreisen beginnen und sie langsam immer größer werden lassen. Nach 30 Sekunden die Richtung wechseln.",
+     muscles:"Wärmt die Schultergelenke auf."},
+    {name:"Schulterkreisen", time:60, cue:"Arme locker hängen lassen, Schultern langsam nach hinten kreisen.",
+     tool:"Keine.",
+     how:"Arme hängen locker neben dem Körper. Schultern hoch zu den Ohren ziehen, nach hinten führen, nach unten sinken lassen und wieder nach vorn. Langsam und rund, eher nach hinten als nach vorn.",
+     muscles:"Lockert Nacken und obere Rückenmuskulatur."},
+    {name:"Katze-Kuh", time:60, cue:"Vierfüßlerstand, Rücken langsam rund machen und durchhängen lassen. Zwickt das Handgelenk, auf die Fäuste gehen.",
+     tool:"Keine.",
+     how:"Vierfüßlerstand: Hände unter den Schultern, Knie unter der Hüfte. Beim Ausatmen den Rücken rund machen und das Kinn zur Brust nehmen. Beim Einatmen das Brustbein nach vorn schieben und den Rücken leicht absinken lassen.\n\nDa du zum Hohlkreuz neigst, die Kuh-Phase nur sanft ausführen und mehr Zeit in der runden Katze verbringen. Wenn die Handgelenke zwicken, auf die Fäuste stützen.",
+     muscles:"Mobilisiert die ganze Wirbelsäule."},
+    {name:"Wandliegestütze auf den Fäusten", reps:"10 Wdh.", est:25, cue:"Fäuste an die Wand, Körper gerade, Brust zur Wand führen.",
+     tool:"Eine freie Wand.",
+     how:"Etwa eine Armlänge vor die Wand stellen, Fäuste auf Schulterhöhe an die Wand. Körper gerade halten, Brust langsam zur Wand führen und wieder wegdrücken.\n\nDas aktiviert dieselben Muskeln wie der richtige Liegestütz, nur ganz leicht.",
+     muscles:"Brust, Trizeps, Schultern."}
   ];
   var MAIN = [
-    {name:"Liegestütze auf den Fäusten", reps:"8–12 Wdh.", cue:"Auf gefalteter Matte, Handgelenk gerade. Anfangs erhöht an Tisch- oder Sofakante."},
-    {name:"Tischrudern", reps:"8–12 Wdh.", cue:"Unter einen stabilen Tisch legen, Kante greifen, Brust zur Kante ziehen. Körper bleibt gerade."},
-    {name:"Dips an Stühlen", reps:"8–12 Wdh.", cue:"Ellbogen zeigen nach hinten, Schultern weg von den Ohren. Beine anfangs angewinkelt."},
-    {name:"Unterarmstütz mit Schulterantippen", time:35, cue:"Hüfte ruhig halten und abwechselnd die gegenüberliegende Schulter antippen."},
-    {name:"Y-T-W in Bauchlage", reps:"6 Durchgänge", est:45, cue:"Arme als Y, dann T, dann W anheben, jeweils 2 Sekunden halten. Blick zur Matte."},
-    {name:"Handtuch-Bizeps", sets:3, hold:10, gap:10, cue:"Auf das Handtuch stellen, Enden greifen und mit voller Kraft nach oben ziehen."}
+    {name:"Liegestütze auf den Fäusten", reps:"8–12 Wdh.", cue:"Auf gefalteter Matte, Handgelenk gerade. Anfangs erhöht an Tisch- oder Sofakante.",
+     tool:"Matte doppelt gefaltet als Polster. Für die leichtere Variante eine Tisch- oder Sofakante.",
+     how:"Fäuste schulterbreit aufsetzen, das Gewicht liegt auf den Knöcheln von Zeige- und Mittelfinger. Das Handgelenk steht gerade über der Faust und knickt nicht ab, deshalb tut es so weniger weh.\n\nKörper von Kopf bis Ferse in einer Linie, Bauch und Po leicht anspannen. Die Brust bis knapp über den Boden absenken, die Ellbogen zeigen schräg nach hinten (etwa 45° zum Körper), dann kräftig hochdrücken.\n\nLeichter: Fäuste erhöht auf Tisch- oder Sofakante, oder Knie am Boden. Schwerer: 3 Sekunden langsam absenken oder die Füße erhöht ablegen.",
+     muscles:"Brust, Trizeps, vordere Schulter, Rumpf."},
+    {name:"Tischrudern", reps:"8–12 Wdh.", cue:"Unter einen stabilen Tisch legen, Kante greifen, Brust zur Kante ziehen. Körper bleibt gerade.",
+     tool:"Ein stabiler Tisch, z. B. ein Esstisch. Wichtig: Vorher prüfen, ob er dein Gewicht hält und nicht kippt. Leichte Tische mit dünnen Beinen nicht nehmen.",
+     how:"Auf den Rücken unter den Tisch legen, sodass die Brust unter der Tischkante liegt. Kante schulterbreit greifen, Arme gestreckt. Fersen am Boden, Körper gerade wie ein Brett.\n\nSchulterblätter zusammenziehen und die Brust zur Tischkante ziehen. Kurz oben halten, dann langsam ablassen. Die Hüfte darf nicht durchhängen.\n\nLeichter: Knie anwinkeln, Füße stehen auf. Schwerer: Beine gestreckt, oben 2 Sekunden halten. Hast du keinen geeigneten Tisch, schling ein Handtuch um einen Türpfosten, halte beide Enden und zieh dich schräg nach hinten gelehnt heran (Tür vorher schließen bzw. sichern).",
+     muscles:"Oberer Rücken, breiter Rückenmuskel, Bizeps. Die wichtigste Übung als Gegengewicht zum Drücken."},
+    {name:"Dips an Stühlen", reps:"8–12 Wdh.", cue:"Ellbogen zeigen nach hinten, Schultern weg von den Ohren. Beine anfangs angewinkelt.",
+     tool:"Zwei stabile Stühle ohne Rollen, mit der Lehne zur Wand gestellt, oder eine feste Sofakante.",
+     how:"Mit dem Rücken zur Sitzfläche stellen, Hände schulterbreit auf die Kante, Finger zeigen nach vorn. Po knapp vor der Kante, Beine angewinkelt vor dir.\n\nEllbogen nach hinten beugen und den Körper absenken, bis die Oberarme etwa waagerecht sind, dann wieder hochdrücken. Schultern bleiben unten, weg von den Ohren. Nur so tief gehen, wie es in den Schultern angenehm ist.\n\nSchwerer: Beine weiter vorn und gestreckt. Wenn die Handgelenke hier schmerzen, die Übung weglassen und bei den Liegestützen die Fäuste enger setzen.",
+     muscles:"Trizeps, vordere Schulter, Brust."},
+    {name:"Unterarmstütz mit Schulterantippen", time:35, cue:"Hüfte ruhig halten und abwechselnd mit der Hand die gegenüberliegende Schulter antippen.",
+     tool:"Keine.",
+     how:"Unterarmstütz: Ellbogen unter den Schultern, Körper gerade, Füße etwa hüftbreit. Einen Unterarm kurz lösen und mit der Hand die gegenüberliegende Schulter antippen, dann zurück und Seite wechseln.\n\nDas Ziel ist, dass die Hüfte dabei nicht hin und her wackelt. Bauch und Po fest, nicht ins Hohlkreuz fallen.\n\nLeichter: Füße weiter auseinander oder Knie am Boden. Ganz ohne Antippen ist es ein normaler Unterarmstütz.",
+     muscles:"Rumpf, Schultern, Stabilität."},
+    {name:"Y-T-W in Bauchlage", reps:"6 Durchgänge", est:45, cue:"Arme als Y, dann T, dann W anheben, jeweils 2 Sekunden halten. Blick zur Matte.",
+     tool:"Optional ein gefaltetes Handtuch unter der Stirn.",
+     how:"Auf den Bauch legen, Stirn auf der Matte oder dem Handtuch, Daumen zeigen nach oben. Nacheinander drei Positionen anheben und jeweils 2 Sekunden halten:\n\nY: Arme schräg nach vorn oben. T: Arme seitlich ausgestreckt. W: Ellbogen gebeugt, Hände neben dem Kopf, Schulterblätter zur Mitte ziehen. Ein Durchgang ist Y, T und W.\n\nNur die Arme heben sich, die Brust bleibt am Boden. Bauch leicht anspannen, damit du nicht ins Hohlkreuz gehst.",
+     muscles:"Oberer Rücken, hintere Schulter, Haltung."},
+    {name:"Handtuch-Bizeps", sets:3, hold:10, gap:10, cue:"Auf das Handtuch stellen, Enden greifen und mit voller Kraft nach oben ziehen.",
+     tool:"Ein stabiles, langes Handtuch.",
+     how:"Mit beiden Füßen mittig auf das Handtuch stellen und die Enden greifen, Handflächen zeigen nach oben. Ellbogen etwa im rechten Winkel, nah am Körper.\n\nMit voller Kraft nach oben ziehen, als wolltest du das Handtuch zerreißen. Es bewegt sich nicht, die Kraft entsteht trotzdem (isometrisch). 10 Sekunden halten und dabei weiteratmen.",
+     muscles:"Bizeps, Unterarme."}
   ];
   var COOL = [
-    {name:"Dead Bug", reps:"8 Wdh. je Seite", est:50, cue:"Rückenlage, Arme und Knie nach oben. Gegenüberliegenden Arm und Bein langsam absenken. Der untere Rücken bleibt fest auf der Matte."},
-    {name:"Seitstütz links", time:25, cue:"Auf dem linken Unterarm, Körper in einer Linie."},
+    {name:"Dead Bug", reps:"8 Wdh. je Seite", est:50, cue:"Rückenlage, Arme und Knie nach oben. Gegenüberliegenden Arm und Bein langsam absenken. Der untere Rücken bleibt fest auf der Matte.",
+     tool:"Keine.",
+     how:"Auf den Rücken legen, Arme gestreckt zur Decke, Knie im rechten Winkel über der Hüfte. Den unteren Rücken fest in die Matte drücken.\n\nLangsam den rechten Arm nach hinten und das linke Bein nach vorn absenken, bis knapp über den Boden. Zurück und Seite wechseln. Nur so weit absenken, wie der Rücken am Boden bleibt.\n\nGerade bei Hohlkreuz ideal: Du lernst, das Becken zu stabilisieren, statt den Rücken zu überstrecken.",
+     muscles:"Tiefe Bauchmuskeln, Rumpfstabilität."},
+    {name:"Seitstütz links", time:25, cue:"Auf dem linken Unterarm, Körper in einer Linie.", tool:SIDE_PLANK.tool, how:SIDE_PLANK.how, muscles:SIDE_PLANK.muscles},
     {name:"Seite wechseln", time:10, rest:true, cue:"Kurz ablegen und umdrehen."},
-    {name:"Seitstütz rechts", time:25, cue:"Auf dem rechten Unterarm, Körper in einer Linie."},
-    {name:"Kindhaltung", time:40, cue:"Knie auseinander, Po zu den Fersen, Arme lang nach vorn. In den unteren Rücken atmen."},
-    {name:"Knie zur Brust", time:40, cue:"Rückenlage, beide Knie umfassen und sanft zur Brust ziehen. Leicht hin und her wiegen."},
-    {name:"Hüftbeuger links", time:45, cue:"Linkes Knie auf der Matte, rechter Fuß vorn. Po anspannen, Becken aufrichten, dann leicht nach vorn schieben. Nicht ins Hohlkreuz fallen."},
-    {name:"Hüftbeuger rechts", time:45, cue:"Rechtes Knie auf der Matte, linker Fuß vorn. Po anspannen, Becken aufrichten, leicht nach vorn schieben."},
-    {name:"Oberschenkel hinten links", time:45, cue:"Rückenlage, Handtuch um den linken Fuß, Bein möglichst gestreckt nach oben ziehen. Rechtes Bein bleibt am Boden."},
-    {name:"Oberschenkel hinten rechts", time:45, cue:"Rückenlage, Handtuch um den rechten Fuß, Bein nach oben ziehen. Linkes Bein bleibt am Boden."}
+    {name:"Seitstütz rechts", time:25, cue:"Auf dem rechten Unterarm, Körper in einer Linie.", tool:SIDE_PLANK.tool, how:SIDE_PLANK.how, muscles:SIDE_PLANK.muscles},
+    {name:"Kindhaltung", time:40, cue:"Knie auseinander, Po zu den Fersen, Arme lang nach vorn. In den unteren Rücken atmen.",
+     tool:"Optional ein Kissen unter dem Po, wenn die Fersen nicht erreicht werden.",
+     how:"Aus dem Vierfüßlerstand die Knie etwas öffnen, den Po Richtung Fersen sinken lassen und die Arme lang nach vorn legen. Stirn auf die Matte.\n\nRuhig und tief atmen, dabei spüren, wie sich der untere Rücken beim Einatmen weitet.",
+     muscles:"Dehnt unteren Rücken und Rückenstrecker."},
+    {name:"Knie zur Brust", time:40, cue:"Rückenlage, beide Knie umfassen und sanft zur Brust ziehen. Leicht hin und her wiegen.",
+     tool:"Keine.",
+     how:"Auf den Rücken legen, beide Knie anziehen und mit den Armen umfassen. Sanft Richtung Brust ziehen, bis der untere Rücken flach auf der Matte liegt. Wenn es angenehm ist, leicht von Seite zu Seite wiegen.",
+     muscles:"Dehnt den unteren Rücken, entspannt nach den Stützübungen."},
+    {name:"Hüftbeuger links", time:45, cue:"Linkes Knie auf der Matte, rechter Fuß vorn. Po anspannen, Becken aufrichten, dann leicht nach vorn schieben. Nicht ins Hohlkreuz fallen.",
+     tool:"Matte oder Handtuch doppelt unter dem Knie.",
+     how:"Ausfallschritt mit dem linken Knie auf der Matte, rechter Fuß weit vorn. Oberkörper aufrecht.\n\nDas Entscheidende: Erst den Po anspannen und das Becken unten nach vorn kippen (Steißbein nach unten). Schon das dehnt vorne an der linken Hüfte. Erst dann das Becken leicht nach vorn schieben.\n\nVerkürzte Hüftbeuger ziehen das Becken nach vorn und verstärken das Hohlkreuz. Deshalb ist diese Dehnung für dich besonders wichtig. Wenn du dabei ins Hohlkreuz fällst, dehnt sie kaum.",
+     muscles:"Dehnt die Hüftbeuger."},
+    {name:"Hüftbeuger rechts", time:45, cue:"Rechtes Knie auf der Matte, linker Fuß vorn. Po anspannen, Becken aufrichten, leicht nach vorn schieben.",
+     tool:"Matte oder Handtuch doppelt unter dem Knie.",
+     how:"Wie links, nur mit dem rechten Knie auf der Matte und dem linken Fuß vorn. Po anspannen, Becken aufrichten, dann sanft nach vorn schieben.",
+     muscles:"Dehnt die Hüftbeuger."},
+    {name:"Oberschenkel hinten links", time:45, cue:"Rückenlage, Handtuch um den linken Fuß, Bein möglichst gestreckt nach oben ziehen. Rechtes Bein bleibt am Boden.",
+     tool:"Ein Handtuch oder Gürtel.",
+     how:"Auf den Rücken legen, das Handtuch um die linke Fußsohle legen und beide Enden greifen. Das linke Bein möglichst gestreckt nach oben führen und mit dem Handtuch sanft heranziehen, bis du hinten im Oberschenkel ein deutliches, aber angenehmes Ziehen spürst.\n\nDas rechte Bein bleibt lang am Boden, der Rücken flach. Nicht wippen, ruhig halten und atmen. Leicht gebeugtes Knie ist in Ordnung.",
+     muscles:"Dehnt die hinteren Oberschenkel, gut als Ausgleich zum Fußball."},
+    {name:"Oberschenkel hinten rechts", time:45, cue:"Rückenlage, Handtuch um den rechten Fuß, Bein nach oben ziehen. Linkes Bein bleibt am Boden.",
+     tool:"Ein Handtuch oder Gürtel.",
+     how:"Wie links, nur mit dem rechten Bein. Das linke Bein bleibt lang am Boden, der Rücken flach.",
+     muscles:"Dehnt die hinteren Oberschenkel."}
   ];
 
   function describe(ex){
@@ -221,13 +287,24 @@ h2{font-size:24px;margin:22px 0 8px}
     if (ex.time) return ex.time + " s";
     return ex.reps;
   }
+  var CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+  function para(cls, label, text){
+    var p = document.createElement("p"); if (cls) p.className = cls;
+    if (label){ var b = document.createElement("b"); b.textContent = label + " "; p.appendChild(b); }
+    p.appendChild(document.createTextNode(text)); return p;
+  }
   function fillPlan(id, list){
     var ul = document.getElementById(id); ul.innerHTML = "";
     list.forEach(function(ex){
       if (ex.rest) return;
       var li = document.createElement("li");
-      li.innerHTML = "<span></span><span></span>";
-      li.children[0].textContent = ex.name; li.children[1].textContent = describe(ex);
+      li.innerHTML = '<details><summary><span class="n"></span><span class="m"></span>' + CHEV + '</summary><div class="info"></div></details>';
+      li.querySelector(".n").textContent = ex.name;
+      li.querySelector(".m").textContent = describe(ex);
+      var info = li.querySelector(".info");
+      if (ex.tool) info.appendChild(para("tool", "Hilfsmittel:", ex.tool));
+      (ex.how || ex.cue).split("\n\n").forEach(function(t){ info.appendChild(para("", "", t)); });
+      if (ex.muscles) info.appendChild(para("muscles", "Trainiert:", ex.muscles));
       ul.appendChild(li);
     });
   }
